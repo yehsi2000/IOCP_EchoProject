@@ -23,6 +23,7 @@ TCHAR recvbuf[MAX_BUFFER];
 SOCKET connectSocket = INVALID_SOCKET;
 WSABUF dataBuf;
 HANDLE pworkerHandle;
+HANDLE psendHandle;
 struct addrinfo *result = nullptr, *ptr = nullptr, hints;
 TCHAR addressBuffer[MAX_BUFFER];
 char convertedAddress[MAX_BUFFER];
@@ -41,6 +42,19 @@ void Listen(void *args) {
       printf("recv failed: %d\n", WSAGetLastError());
       break;
     }
+  }
+}
+
+void SendLoop(void *args) {
+  int res;
+  while (true) {
+    res = send(connectSocket, convertedAddress, MAX_BUFFER, 0);
+    if (res == SOCKET_ERROR) {
+      closesocket(connectSocket);
+      connectSocket = INVALID_SOCKET;
+      return;
+    }
+    Sleep(1000);
   }
 }
 
@@ -112,20 +126,17 @@ void Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify) {
       break;
 
     case IDC_SUBMIT:
+      if (psendHandle != nullptr) {
+        MessageBox(hwnd, TEXT("Already sending."), TEXT("Info"), MB_OK);
+        return;
+      }
+
       Edit_GetText(GetDlgItem(hwnd, IDC_SENDEDIT), messageBuffer,
                    _countof(messageBuffer));
       WideCharToMultiByte(CP_ACP, 0, messageBuffer, -1, convertedAddress,
                           _countof(convertedAddress), nullptr, 0);
-      res =
-          send(connectSocket, convertedAddress, _countof(convertedAddress), 0);
-      if (res == SOCKET_ERROR) {
-        printf("send failed: %d\n", WSAGetLastError());
-        closesocket(connectSocket);
-        connectSocket = INVALID_SOCKET;
-        return;
-      }
 
-      _tprintf(TEXT("Sent : %s\n"), messageBuffer);
+      psendHandle = (HANDLE)_beginthread(SendLoop, 0, nullptr);
 
       break;
   }

@@ -5,7 +5,6 @@
 #include <tchar.h>
 #include <windows.h>
 
-#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <list>
