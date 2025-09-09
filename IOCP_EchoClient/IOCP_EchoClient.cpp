@@ -23,7 +23,7 @@ TCHAR recvbuf[MAX_BUFFER];
 SOCKET connectSocket = INVALID_SOCKET;
 WSABUF dataBuf;
 HANDLE pworkerHandle;
-struct addrinfo *result = NULL, *ptr = NULL, hints;
+struct addrinfo *result = nullptr, *ptr = nullptr, hints;
 TCHAR addressBuffer[MAX_BUFFER];
 char convertedAddress[MAX_BUFFER];
 
@@ -74,7 +74,7 @@ void Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify) {
       Edit_GetText(GetDlgItem(hwnd, IDC_ADDRESS), addressBuffer,
                    _countof(addressBuffer));
       WideCharToMultiByte(CP_ACP, 0, addressBuffer, -1, convertedAddress,
-                          _countof(convertedAddress), NULL, NULL);
+                          _countof(convertedAddress), nullptr, 0);
       res = getaddrinfo(convertedAddress, SERVER_PORT_STR, &hints, &result);
       if (res != 0) {
         printf("getaddrinfo failed: %d\n", res);
@@ -99,11 +99,11 @@ void Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify) {
         connectSocket = INVALID_SOCKET;
       } else {
         std::cout << "Connected to server" << std::endl;
-        pworkerHandle = (HANDLE)_beginthread(Listen, 0, NULL);
+        pworkerHandle = (HANDLE)_beginthread(Listen, 0, nullptr);
       }
 
       freeaddrinfo(result);
-      result = NULL;
+      result = nullptr;
 
       if (connectSocket == INVALID_SOCKET) {
         std::cerr << "Unable to connect to server" << std::endl;
@@ -115,7 +115,7 @@ void Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify) {
       Edit_GetText(GetDlgItem(hwnd, IDC_SENDEDIT), messageBuffer,
                    _countof(messageBuffer));
       WideCharToMultiByte(CP_ACP, 0, messageBuffer, -1, convertedAddress,
-                          _countof(convertedAddress), NULL, NULL);
+                          _countof(convertedAddress), nullptr, 0);
       res =
           send(connectSocket, convertedAddress, _countof(convertedAddress), 0);
       if (res == SOCKET_ERROR) {
@@ -143,7 +143,7 @@ INT_PTR WINAPI Dlg_Proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       return SetDlgMsgResult(
           hwnd, uMsg, HANDLE_WM_COMMAND(hwnd, wParam, lParam, Dlg_OnCommand));
     case WM_CLOSE:
-      if (pworkerHandle != NULL) {
+      if (pworkerHandle != nullptr) {
         if (connectSocket != INVALID_SOCKET) {
           closesocket(connectSocket);
           connectSocket = INVALID_SOCKET;
@@ -152,7 +152,7 @@ INT_PTR WINAPI Dlg_Proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         WaitForSingleObject(pworkerHandle, 3000);
 
         CloseHandle(pworkerHandle);
-        pworkerHandle = NULL;
+        pworkerHandle = nullptr;
       }
       EndDialog(hwnd, 0);
       return TRUE;
@@ -178,7 +178,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_protocol = IPPROTO_TCP;
 
-  DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG), NULL, Dlg_Proc);
+  DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG), nullptr, Dlg_Proc);
   closesocket(connectSocket);
   WSACleanup();
   return 0;
